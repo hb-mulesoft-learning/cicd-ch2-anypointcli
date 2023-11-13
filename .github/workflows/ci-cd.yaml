@@ -64,6 +64,7 @@ jobs:
     name: Set environments to deploy
     needs:
       - build
+      - unit-tests
     outputs:
       envsToDeploy: ${{ steps.envsToDeploy.outputs.result }}
     env:
