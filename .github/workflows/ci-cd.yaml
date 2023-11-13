@@ -68,13 +68,14 @@ jobs:
       envsToDeploy: ${{ steps.envsToDeploy.outputs.result }}
     env:
       EVENT_NAME: ${{ github.event_name }}
+      EVENT_HEAD_REF : ${{ github.head_ref }}
     steps:
       - name: Set Environments to deploy
         id: envsToDeploy
         run: |
-          if [[ ($EVENT_NAME == pull_request || $EVENT_NAME == push) && ( $GITHUB_HEAD_REF == feature* ) ]]; then
+          if [[ ($EVENT_NAME == pull_request || $EVENT_NAME == push) && ( $EVENT_HEAD_REF == feature* ) ]]; then
             envs='["Dev"]'
-          elif [[ "$EVENT_NAME" == "push" && $GITHUB_HEAD_REF == main ]]; then
+          elif [[ "$EVENT_NAME" == "push" && $EVENT_HEAD_REF == main ]]; then
             envs='["Dev", "UAT"]'
           else 
             echo "Unable to determine Environments"
