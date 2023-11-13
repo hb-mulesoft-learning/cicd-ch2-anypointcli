@@ -88,6 +88,7 @@ jobs:
           DEPLOY_TARGET: ${{ vars.DEPLOY_TARGET }}
           DEPLOY_REPLICAS: ${{ vars.DEPLOY_REPLICAS }}
           DEPLOY_VCORES: ${{ vars.DEPLOY_VCORES }}
+          DEPLOY_RUNTIME: ${{ vars.DEPLOY_RUNTIME }}
         run: | 
           anypoint-cli-v4 \
           runtime-mgr application deploy $ASSET_NAME $DEPLOY_TARGET $DEPLOY_RUNTIME $ASSET_NAME  \
