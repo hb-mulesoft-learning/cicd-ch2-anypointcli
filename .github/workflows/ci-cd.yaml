@@ -1,0 +1,98 @@
+name: CI and CD
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - feature/*
+  pull_request:
+    branches: 
+      - main
+
+defaults:
+  run:
+    shell: bash  
+
+jobs:
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Run Unit Tests
+    steps:
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3.13.0
+        with:
+          java-version: 8  
+          distribution: zulu
+          architecture: x64
+          overwrite-settings: false
+          
+      - uses: actions/checkout@v4
+
+      - name: Run Unit tests
+        run: mvn clean test
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build JAR Artifact
+    steps:
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3.13.0
+        with:
+          java-version: 8  
+          distribution: zulu
+          architecture: x64
+          overwrite-settings: false
+          
+      - uses: actions/checkout@v4
+
+      - name: Run Build
+        run: mvn clean package -DskipTests
+      
+      - name: Save Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: maven-artifact
+          path: target/*.jar
+          retention-days: 15
+          if-no-files-found: error
+        
+        
+  # environments-to-deploy:
+  #   runs-on: ubuntu-latest
+  #   name: Set environments to deploy
+  #   needs:
+  #     - build
+  #   outputs:
+  #     envsToDeploy: ${{ steps.envsToDeploy.outputs.result }}
+  #   env:
+  #     EVENT_NAME: ${{ github.event_name }}
+  #   steps:
+  #     - name: Set Environments to deploy
+  #       id: envsToDeploy
+  #       run: |
+  #         if [ "$EVENT_NAME" == "pull_request" ]; then
+  #           envs='["Dev"]'
+  #         elif [ "$EVENT_NAME" == "push" ]; then
+  #           envs='["Dev", "UAT"]'
+  #         else 
+  #           echo "Unable to determine Environments"
+  #           exit 1
+  #         fi
+  #         echo "result=$envs"
+  #         echo "result=$envs" >> "$GITHUB_OUTPUT"
+      
+  # deploy-to-non-prod:
+  #   name: Deploy
+  #   needs: 
+  #     - environments-to-deploy
+  #   strategy:
+  #     fail-fast: true
+  #     max-parallel: 1
+  #     matrix:
+  #       target: ${{ fromJSON(needs.environments-to-deploy.outputs.envsToDeploy) }}
+  #   uses: ./.github/workflows/publish-and-deploy.yaml
+  #   with:
+  #     targetEnv: ${{ matrix.target }}
+  #   secrets: inherit
