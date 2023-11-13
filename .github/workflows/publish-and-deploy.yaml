@@ -1,0 +1,75 @@
+name: Publish and deploy
+
+on:
+  workflow_call:
+    inputs:
+      targetEnv:
+        required: true
+        type: string
+      gitRef:
+        required: false
+        type: string
+    secrets:
+      EXCHANGE_CLIENT_ID:
+        required: true
+      EXCHANGE_CLIENT_SECRET:
+        required: true
+
+defaults:
+  run:
+    shell: bash
+    
+jobs:
+
+  publish-and-deploy:
+    runs-on: ubuntu-latest
+    name: Publish and deploy
+    environment: ${{ inputs.targetEnv }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.gitRef }}
+          
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: maven-artifact    
+      
+      - name: Display structure of downloaded files
+        run: ls -R
+      
+      #   - name: Publish To Exchange
+      #   if: (inputs.skipPublish == false)
+      #   env:
+      #     EXCHANGE_CLIENT_ID: ${{ secrets.EXCHANGE_CLIENT_ID }}
+      #     EXCHANGE_CLIENT_SECRET: ${{ secrets.EXCHANGE_CLIENT_SECRET }}
+      #   run: |
+      #       mvn clean deploy \
+      #           -DskipTests \
+      #           --settings .github/mvn-config/settings.xml \
+      #           -Dexchange.clientId=$EXCHANGE_CLIENT_ID \
+      #           -Dexchange.clientSecret=$EXCHANGE_CLIENT_SECRET
+      
+      # - name: Deploy to ${{ inputs.targetEnv }}
+      #   env:
+      #     EXCHANGE_CLIENT_ID: ${{ secrets.EXCHANGE_CLIENT_ID }}
+      #     EXCHANGE_CLIENT_SECRET: ${{ secrets.EXCHANGE_CLIENT_SECRET }}
+      #     DEPLOY_ENV: ${{ vars.DEPLOY_ENV }}
+      #     MULE_ENV: ${{ vars.MULE_ENV }}
+      #     DEPLOY_TARGET: ${{ vars.DEPLOY_TARGET }}
+      #     MAVEN_SETTINGS_SERVER_ID: ${{ vars.MAVEN_SETTINGS_SERVER_ID }}
+      #     DEPLOY_REPLICAS: ${{ vars.DEPLOY_REPLICAS }}
+      #     DEPLOY_VCORES: ${{ vars.DEPLOY_VCORES }}
+      #   run: | 
+      #       mvn clean deploy -DskipTests \
+      #           -DmuleDeploy \
+      #           --settings .github/mvn-config/settings.xml \
+      #           -Ddeploy.env=$DEPLOY_ENV \
+      #           -Dmule.env=$MULE_ENV \
+      #           -Ddeploy.target=$DEPLOY_TARGET \
+      #           -Dmvnsettings.serverid=$MAVEN_SETTINGS_SERVER_ID \
+      #           -Ddeploy.replicas=$DEPLOY_REPLICAS \
+      #           -Ddeploy.vCores=$DEPLOY_VCORES \
+      #           -Dexchange.clientId=$EXCHANGE_CLIENT_ID \
+      #           -Dexchange.clientSecret=$EXCHANGE_CLIENT_SECRET
+            
