@@ -26,9 +26,9 @@ jobs:
     name: Publish and deploy
     environment: ${{ inputs.targetEnv }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.gitRef }}
+      # - uses: actions/checkout@v4
+      #   with:
+      #     ref: ${{ inputs.gitRef }}
           
       - name: Download Artifact
         uses: actions/download-artifact@v3
