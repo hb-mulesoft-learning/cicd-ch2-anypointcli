@@ -35,9 +35,23 @@ jobs:
         with:
           name: maven-artifact    
       
-      - name: Display structure of downloaded files
-        run: ls -R
+      - name: Get Deployable jar name
+        id: getJarName
+        run: |
+          jarName=`ls *jar*
+          echo "Executable Jar name = ${jarName}"
+          echo "jarName=$jarName" >> "$GITHUB_OUTPUT"
       
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with: 
+          node-version: 18.14.0
+      
+      - name: Setup anypoint CLI
+        run: npm install -g anypoint-cli-v4
+      
+      - name: Check Anypoint Installation
+        run: anypoint-cli-v4 --version
       #   - name: Publish To Exchange
       #   if: (inputs.skipPublish == false)
       #   env:
