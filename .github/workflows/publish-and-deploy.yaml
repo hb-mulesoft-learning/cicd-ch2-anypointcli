@@ -38,7 +38,7 @@ jobs:
       - name: Get Deployable jar name
         id: getJarName
         run: |
-          jarName=`ls *jar*
+          jarName=`ls *jar`
           echo "Executable Jar name = ${jarName}"
           echo "jarName=$jarName" >> "$GITHUB_OUTPUT"
       
