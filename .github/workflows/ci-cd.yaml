@@ -87,6 +87,7 @@ jobs:
     name: Deploy
     needs: 
       - environments-to-deploy
+      - build
     strategy:
       fail-fast: true
       max-parallel: 1
