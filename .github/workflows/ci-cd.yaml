@@ -58,13 +58,11 @@ jobs:
           path: target/*.jar
           retention-days: 15
           if-no-files-found: error
-        
-        
+            
   environments-to-deploy:
     runs-on: ubuntu-latest
     name: Set environments to deploy
     needs:
-      - build
       - unit-tests
     outputs:
       envsToDeploy: ${{ steps.envsToDeploy.outputs.result }}
