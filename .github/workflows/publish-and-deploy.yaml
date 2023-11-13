@@ -76,6 +76,7 @@ jobs:
           --type app \
           --files "{\"mule-application.jar\": \"$JAR_FILE\"}" \
           --status $assetStatus
+          --name $ASSET_NAME
       
       # - name: Deploy to ${{ inputs.targetEnv }}
       #   env:
