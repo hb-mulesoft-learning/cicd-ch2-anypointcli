@@ -72,9 +72,9 @@ jobs:
       - name: Set Environments to deploy
         id: envsToDeploy
         run: |
-          if [ "$EVENT_NAME" == "pull_request" ]; then
+          if [[ ($EVENT_NAME == pull_request || $EVENT_NAME == push) && ( $GITHUB_HEAD_REF == feature* ) ]]; then
             envs='["Dev"]'
-          elif [ "$EVENT_NAME" == "push" ]; then
+          elif [[ "$EVENT_NAME" == "push" && $GITHUB_HEAD_REF == main ]]; then
             envs='["Dev", "UAT"]'
           else 
             echo "Unable to determine Environments"
