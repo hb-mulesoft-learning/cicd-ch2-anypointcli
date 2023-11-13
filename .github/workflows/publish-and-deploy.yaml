@@ -70,11 +70,11 @@ jobs:
           if [[ $IS_STABLE_VERSION == true ]]; then
             assetStatus='published'
           else
-            assetStatus='published'
+            assetStatus='development'
           fi
           anypoint-cli-v4 exchange asset upload $ASSET_NAME/$ASSET_VERSION \
           --type app \
-          --files '{"mule-application.jar": "$JAR_FILE"}' \
+          --files "{\"mule-application.jar\": \"$JAR_FILE\"}" \
           --status $assetStatus
       
       # - name: Deploy to ${{ inputs.targetEnv }}
