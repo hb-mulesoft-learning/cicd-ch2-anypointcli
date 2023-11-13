@@ -75,29 +75,24 @@ jobs:
           anypoint-cli-v4 exchange asset upload $ASSET_NAME/$ASSET_VERSION \
           --type app \
           --files "{\"mule-application.jar\": \"$JAR_FILE\"}" \
-          --status $assetStatus
+          --status $assetStatus \
           --name $ASSET_NAME
       
-      # - name: Deploy to ${{ inputs.targetEnv }}
-      #   env:
-      #     ANYPOINT_CLIENT_ID: ${{ secrets.EXCHANGE_CLIENT_ID }}
-      #     ANYPOINT_CLIENT_SECRET: ${{ secrets.EXCHANGE_CLIENT_SECRET }}
-      #     DEPLOY_ENV: ${{ vars.DEPLOY_ENV }}
-      #     MULE_ENV: ${{ vars.MULE_ENV }}
-      #     DEPLOY_TARGET: ${{ vars.DEPLOY_TARGET }}
-      #     MAVEN_SETTINGS_SERVER_ID: ${{ vars.MAVEN_SETTINGS_SERVER_ID }}
-      #     DEPLOY_REPLICAS: ${{ vars.DEPLOY_REPLICAS }}
-      #     DEPLOY_VCORES: ${{ vars.DEPLOY_VCORES }}
-      #   run: | 
-      #       mvn clean deploy -DskipTests \
-      #           -DmuleDeploy \
-      #           --settings .github/mvn-config/settings.xml \
-      #           -Ddeploy.env=$DEPLOY_ENV \
-      #           -Dmule.env=$MULE_ENV \
-      #           -Ddeploy.target=$DEPLOY_TARGET \
-      #           -Dmvnsettings.serverid=$MAVEN_SETTINGS_SERVER_ID \
-      #           -Ddeploy.replicas=$DEPLOY_REPLICAS \
-      #           -Ddeploy.vCores=$DEPLOY_VCORES \
-      #           -Dexchange.clientId=$EXCHANGE_CLIENT_ID \
-      #           -Dexchange.clientSecret=$EXCHANGE_CLIENT_SECRET
-            
+      - name: Deploy to ${{ inputs.targetEnv }}
+        env:
+          ANYPOINT_CLIENT_ID: ${{ secrets.EXCHANGE_CLIENT_ID }}
+          ANYPOINT_CLIENT_SECRET: ${{ secrets.EXCHANGE_CLIENT_SECRET }}
+          ASSET_VERSION: ${{ inputs.pomArtifactVersion }}
+          ASSET_NAME: ${{ inputs.pomArtifactId }}
+          DEPLOY_ENV: ${{ vars.DEPLOY_ENV }}
+          DEPLOY_TARGET: ${{ vars.DEPLOY_TARGET }}
+          DEPLOY_REPLICAS: ${{ vars.DEPLOY_REPLICAS }}
+          DEPLOY_VCORES: ${{ vars.DEPLOY_VCORES }}
+        run: | 
+          anypoint-cli-v4 \
+          runtime-mgr application deploy $ASSET_NAME $DEPLOY_TARGET $DEPLOY_RUNTIME $ASSET_NAME  \
+          --assetVersion $ASSET_VERSION \
+          --environment $DEPLOY_ENV \
+          --objectStoreV2 \
+          --replicas $DEPLOY_REPLICAS \
+          --replicaSize $DEPLOY_VCORES
