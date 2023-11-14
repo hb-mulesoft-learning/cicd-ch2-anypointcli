@@ -90,16 +90,17 @@ jobs:
           DEPLOY_VCORES: ${{ vars.DEPLOY_VCORES }}
           DEPLOY_RUNTIME: ${{ vars.DEPLOY_RUNTIME }}
         run: | 
-          existingDeployId = $(anypoint-cli-v4.cmd runtime-mgr application list --environment Sandbox --output json | node <<-'EOF'
-            process.stdin.on('data', data => {
-              var jsonData = JSON.parse(data)
-              var id = jsonData.filter((deploymentDetail) => 
-                deploymentDetail.name == process.env.ASSET_NAME
-                && deploymentDetail.target.targetId == process.env.DEPLOY_TARGET
-              )?.[0]?.name
-              console.log(id || '')
-            })
-            'EOF'
+          existingDeployId = $(anypoint-cli-v4.cmd runtime-mgr application list --environment Sandbox --output json | \
+          node <<-'EOF'
+          process.stdin.on('data', data => {
+            var jsonData = JSON.parse(data)
+            var id = jsonData.filter((deploymentDetail) => 
+              deploymentDetail.name == process.env.ASSET_NAME
+              && deploymentDetail.target.targetId == process.env.DEPLOY_TARGET
+            )?.[0]?.name
+            console.log(id || '')
+          })
+          'EOF'
           )
           echo "got existingDeployId = $existingDeployId"
           anypoint-cli-v4 \
