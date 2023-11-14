@@ -90,8 +90,9 @@ jobs:
           DEPLOY_VCORES: ${{ vars.DEPLOY_VCORES }}
           DEPLOY_RUNTIME: ${{ vars.DEPLOY_RUNTIME }}
         run: | 
-          existingDeployId = $(anypoint-cli-v4.cmd runtime-mgr application list --environment Sandbox --output json | \
-          | jq -r --arg NAME $ASSET_NAME --arg TARGET $DEPLOY_TARGET '.[] | select(.name == $NAME and .target.targetId == $TARGET) | .id'
+          existingDeployId=$(
+            anypoint-cli-v4.cmd runtime-mgr application list --environment Sandbox --output json \
+            | jq -r --arg NAME $ASSET_NAME --arg TARGET $DEPLOY_TARGET '.[] | select(.name == $NAME and .target.targetId == $TARGET) | .id'
           )
           echo "got existingDeployId = $existingDeployId"
           
