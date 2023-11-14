@@ -108,7 +108,8 @@ jobs:
           echo "Existing application found with the name $DEPLOY_NAME in $DEPLOY_TARGET; existingDeployId = $existingDeployId"
             anypoint-cli-v4 \
             runtime-mgr application modify $existingDeployId
-            --artifactId $ASSET_NAME
+            --artifactId $ASSET_NAME \
+            --environment $DEPLOY_ENV \
             --assetVersion $ASSET_VERSION \
             --replicas $DEPLOY_REPLICAS \
             --replicaSize $DEPLOY_VCORES
