@@ -1,0 +1,112 @@
+name: CI and CD
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - feature/*
+  pull_request:
+    branches: 
+      - main
+
+defaults:
+  run:
+    shell: bash  
+
+jobs:
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Run Unit Tests
+    steps:
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3.13.0
+        with:
+          java-version: 8  
+          distribution: zulu
+          architecture: x64
+          overwrite-settings: false
+          
+      - uses: actions/checkout@v4
+
+      - name: Run Unit tests
+        run: mvn clean test
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    needs: unit-tests
+    outputs:
+      artifactId: ${{ steps.build.outputs.artifactId }}
+      pomVersion: ${{ steps.build.outputs.pomVersion }}
+    steps:
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3.13.0
+        with:
+          java-version: 8  
+          distribution: zulu
+          architecture: x64
+          overwrite-settings: false
+          
+      - uses: actions/checkout@v4
+
+      - name: Build
+        id: build
+        run: |
+          mvn clean package -DskipTests
+          echo "Build Successful. Setting artifact details in output"
+          pomVersion=$(mvn help:evaluate '-Dexpression=project.version' -q -DforceStdout)
+          artifactId=$(mvn help:evaluate '-Dexpression=project.artifactId' -q -DforceStdout)
+          echo "pomVersion=$pomVersion" >> "$GITHUB_OUTPUT" 
+          echo "artifactId=$artifactId" >> "$GITHUB_OUTPUT" 
+      
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: maven-artifact
+          path: target/*.jar
+          retention-days: 15
+          if-no-files-found: error
+            
+  environments-to-deploy:
+    runs-on: ubuntu-latest
+    name: Set environments to deploy
+    needs:
+      - unit-tests
+    outputs:
+      envsToDeploy: ${{ steps.envsToDeploy.outputs.result }}
+    steps:
+      - name: Set Environments to deploy
+        id: envsToDeploy
+        run: |
+          if [[ ($GITHUB_EVENT_NAME == pull_request && $GITHUB_HEAD_REF == feature* ) || ($GITHUB_EVENT_NAME == push && $GITHUB_REF_NAME == feature*) ]]; then
+            envs='["Dev"]'
+          elif [[ "$GITHUB_EVENT_NAME" == "push" && $GITHUB_REF_NAME == main ]]; then
+            envs='["Dev", "UAT"]'
+          else 
+            echo "Unable to determine Environments"
+            exit 1
+          fi
+          echo "result=$envs"
+          echo "result=$envs" >> "$GITHUB_OUTPUT"
+      
+  deploy-to-non-prod:
+    name: Deploy
+    needs: 
+      - environments-to-deploy
+      - build
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        target: ${{ fromJSON(needs.environments-to-deploy.outputs.envsToDeploy) }}
+    uses: ./.github/workflows/publish-and-deploy.yaml
+    with:
+      targetEnv: ${{ matrix.target }}
+      githubActionsArtifactName: maven-artifact
+      isProdDevelopment: false
+      pomArtifactVersion: ${{ needs.build.outputs.pomVersion }}
+      pomArtifactId: ${{ needs.build.outputs.artifactId }}
+
+    secrets: inherit
