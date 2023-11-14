@@ -84,6 +84,7 @@ jobs:
           ANYPOINT_CLIENT_SECRET: ${{ secrets.EXCHANGE_CLIENT_SECRET }}
           ASSET_VERSION: ${{ inputs.pomArtifactVersion }}
           ASSET_NAME: ${{ inputs.pomArtifactId }}
+          DEPLOY_NAME: ${{ inputs.pomArtifactId }}-${{ vars.MULE_ENV }}
           DEPLOY_ENV: ${{ vars.DEPLOY_ENV }}
           DEPLOY_TARGET: ${{ vars.DEPLOY_TARGET }}
           DEPLOY_REPLICAS: ${{ vars.DEPLOY_REPLICAS }}
@@ -92,14 +93,24 @@ jobs:
         run: | 
           existingDeployId=$(
             anypoint-cli-v4 runtime-mgr application list --environment Sandbox --output json \
-            | jq -r --arg NAME $ASSET_NAME --arg TARGET $DEPLOY_TARGET '.[] | select(.name == $NAME and .target.targetId == $TARGET) | .id'
+            | jq -r --arg NAME $DEPLOY_NAME --arg TARGET $DEPLOY_TARGET '.[] | select(.name == $NAME and .target.targetId == $TARGET) | .id'
           )
-          echo "got existingDeployId = $existingDeployId"
+          if [[ -z $existingDeployId ]]; then
+            echo 'No existing application found with the name $DEPLOY_NAME in $DEPLOY_TARGET'
+            anypoint-cli-v4 \
+            runtime-mgr application deploy $DEPLOY_NAME $DEPLOY_TARGET $DEPLOY_RUNTIME $ASSET_NAME  \
+            --assetVersion $ASSET_VERSION \
+            --environment $DEPLOY_ENV \
+            --objectStoreV2 \
+            --replicas $DEPLOY_REPLICAS \
+            --replicaSize $DEPLOY_VCORES
+          else 
+          echo "Existing application found with the name $DEPLOY_NAME in $DEPLOY_TARGET; existingDeployId = $existingDeployId"
+            anypoint-cli-v4 \
+            runtime-mgr application modify $existingDeployId
+            --artifactId $ASSET_NAME
+            --assetVersion $ASSET_VERSION \
+            --replicas $DEPLOY_REPLICAS \
+            --replicaSize $DEPLOY_VCORES
+          fi
           
-          anypoint-cli-v4 \
-          runtime-mgr application deploy $ASSET_NAME $DEPLOY_TARGET $DEPLOY_RUNTIME $ASSET_NAME  \
-          --assetVersion $ASSET_VERSION \
-          --environment $DEPLOY_ENV \
-          --objectStoreV2 \
-          --replicas $DEPLOY_REPLICAS \
-          --replicaSize $DEPLOY_VCORES
