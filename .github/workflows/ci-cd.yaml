@@ -5,9 +5,12 @@ on:
   push:
     branches:
       - main
+    tags: 
+      - 'v*'
   pull_request:
     branches: 
       - main
+  
 
 defaults:
   run:
@@ -79,10 +82,12 @@ jobs:
       - name: Set Environments to deploy
         id: envsToDeploy
         run: |
-          if [[ ($GITHUB_EVENT_NAME == pull_request && $GITHUB_HEAD_REF == feature* ) || ($GITHUB_EVENT_NAME == push && $GITHUB_REF_NAME == feature*) ]]; then
+          if [[ ($GITHUB_EVENT_NAME == pull_request && $GITHUB_HEAD_REF == feature* ) || ($GITHUB_EVENT_NAME == push && $GITHUB_REF_NAME == refs/heads/* && $GITHUB_REF_NAME == feature*) ]]; then
             envs='["Dev"]'
-          elif [[ "$GITHUB_EVENT_NAME" == "push" && $GITHUB_REF_NAME == main ]]; then
+          elif [[ "$GITHUB_EVENT_NAME" == "push" && $GITHUB_REF_NAME == refs/heads/* && $GITHUB_REF_NAME == main ]]; then
             envs='["Dev", "UAT"]'
+          elif [[ "$GITHUB_EVENT_NAME" == "push" && $GITHUB_REF_NAME == refs/tags/* && $GITHUB_REF_NAME == v* ]]; then
+            envs='["Production"]'
           else 
             echo "Unable to determine Environments"
             exit 1
@@ -101,11 +106,10 @@ jobs:
       matrix:
         target: ${{ fromJSON(needs.environments-to-deploy.outputs.envsToDeploy) }}
     uses: ./.github/workflows/publish-and-deploy.yaml
+    secrets: inherit
     with:
       targetEnv: ${{ matrix.target }}
       githubActionsArtifactName: maven-artifact
       isProdDevelopment: false
       pomArtifactVersion: ${{ needs.build.outputs.pomVersion }}
       pomArtifactId: ${{ needs.build.outputs.artifactId }}
-
-    secrets: inherit
