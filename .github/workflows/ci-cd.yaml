@@ -82,11 +82,11 @@ jobs:
       - name: Set Environments to deploy
         id: envsToDeploy
         run: |
-          if [[ ($GITHUB_EVENT_NAME == pull_request && $GITHUB_HEAD_REF == feature* ) || ($GITHUB_EVENT_NAME == push && $GITHUB_REF_NAME == refs/heads/* && $GITHUB_REF_NAME == feature*) ]]; then
+          if [[ ($GITHUB_EVENT_NAME == pull_request && $GITHUB_HEAD_REF == feature/* ) || ($GITHUB_EVENT_NAME == push && $GITHUB_REF == refs/heads/* && $GITHUB_REF_NAME == feature/*) ]]; then
             envs='["Dev"]'
-          elif [[ "$GITHUB_EVENT_NAME" == "push" && $GITHUB_REF_NAME == refs/heads/* && $GITHUB_REF_NAME == main ]]; then
+          elif [[ "$GITHUB_EVENT_NAME" == "push" && $GITHUB_REF == refs/heads/* && $GITHUB_REF_NAME == main ]]; then
             envs='["Dev", "UAT"]'
-          elif [[ "$GITHUB_EVENT_NAME" == "push" && $GITHUB_REF_NAME == refs/tags/* && $GITHUB_REF_NAME == v* ]]; then
+          elif [[ "$GITHUB_EVENT_NAME" == "push" && $GITHUB_REF == refs/tags/* && $GITHUB_REF_NAME == v* ]]; then
             envs='["Production"]'
           else 
             echo "Unable to determine Environments"
