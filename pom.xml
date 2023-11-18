@@ -4,7 +4,7 @@
 
 	<groupId>e0e0ff31-e15f-4e4a-9029-361c8c12edc4</groupId>
 	<artifactId>cicd-ch2-anypointcli</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<packaging>mule-application</packaging>
 
 	<name>cicd-ch2-anypointcli</name>
