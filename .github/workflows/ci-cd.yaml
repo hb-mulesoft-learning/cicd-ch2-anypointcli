@@ -139,11 +139,12 @@ jobs:
           git status
           git config --global user.email "github-action-workflows@example.com"
           git config --global user.name "Github Actions Workflow"
-          git commit pom.xml -m "Pom updated with project verison ${newVersion}"
+          git add pom.xml
+          git commit -m "Pom updated with project verison ${newVersion}"
 
           # push to new branch
           branchName=feature/actions-auto-backmerge-after-${GITHUB_REF_NAME}-release
-          git push origin HEAD:${branchName}
+          git push origin HEAD:refs/heads/${branchName}
           git status
           echo "branchName=${branchName}" >> $GITHUB_OUTPUT
       
