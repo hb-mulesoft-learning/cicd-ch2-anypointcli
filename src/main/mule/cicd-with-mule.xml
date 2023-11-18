@@ -17,7 +17,7 @@ import dw::System
 output application/json
 ---
 {
-	version: "v1.0.1",
+	version: "v1.0.2",
 	domain: p('domain'),
 	appName: p('app.name'),
 	envVars: dw::System::envVars()
