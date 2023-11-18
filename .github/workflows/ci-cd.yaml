@@ -140,6 +140,8 @@ jobs:
           mvn versions:set -DnewVersion=${NEW_POM_VERSION} -DgenerateBackupPoms=false
           git config --global user.email "github-action-workflows@example.com"
           git config --global user.name "Github Actions Workflow"
-          git commit pom.xml -m "Pom updated with verison = ${NEW_POM_VERSION}"
-          git push origin HEAD:main
+          git commit pom.xml -m "Pom updated with project verison ${NEW_POM_VERSION}"
+          branchName=feature/git-actions-auto-pom-update-to-${shortVersion}
+          git checkout -b ${branchName}
+          git push origin HEAD:${branchName}
           git status
