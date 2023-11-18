@@ -113,3 +113,31 @@ jobs:
       isProdDevelopment: false
       pomArtifactVersion: ${{ needs.build.outputs.pomVersion }}
       pomArtifactId: ${{ needs.build.outputs.artifactId }}
+  
+  upgrade-pom-version:
+    name: Upgrade project version in POM
+    runs-on: ubuntu-latest
+    needs: deploy-to-non-prod
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Get New Version
+        id: new-version
+        run: |
+          newVersion=$(echo "${GITHUB_REF_NAME:1}" | awk 'BEGIN{FS=OFS="."} {$3+=1} 1')
+          echo "New version to update in pom = $newVersion"
+          echo "newVersion=$newVersion" >> $GITHUB_OUTPUT
+      
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      
+      - name: Update and push to main
+        env:
+          NEW_POM_VERSION: ${{ steps.new-version.outputs.newVersion }}
+        run: |
+          mvn versions:set -DnewVersion=${NEW_POM_VERSION} -DgenerateBackupPoms=false
+          git config --global user.email "github-action-workflows@example.com"
+          git config --global user.name "Github Actions Workflow"
+          git commit pom.xml -m "Pom updated with verison = ${NEW_POM_VERSION}"
+          git push origin HEAD:main
+          git status
