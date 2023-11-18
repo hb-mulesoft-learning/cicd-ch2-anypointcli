@@ -114,34 +114,40 @@ jobs:
       pomArtifactVersion: ${{ needs.build.outputs.pomVersion }}
       pomArtifactId: ${{ needs.build.outputs.artifactId }}
   
-  upgrade-pom-version:
-    name: Upgrade project version in POM
+  backmerge-to-main:
+    name: Upgrade project version in POM and backmerge to main
     runs-on: ubuntu-latest
     needs: deploy-to-non-prod
     if: startsWith(github.ref, 'refs/tags/v')
     permissions: 
       contents: write
+      pull-requests: write
     steps:
-      - name: Get New Version
-        id: new-version
+      - uses: actions/checkout@v4
+
+      - name: Update and push to new branch
+        id: update-and-push-to-new-branch
         run: |
+          # set new version based on tag
           newVersion=$(echo "${GITHUB_REF_NAME:1}" | awk 'BEGIN{FS=OFS="."} {$3+=1} 1')
           echo "New version to update in pom = $newVersion"
-          echo "newVersion=$newVersion" >> $GITHUB_OUTPUT
-      
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-      
-      - name: Update and push to main
-        env:
-          NEW_POM_VERSION: ${{ steps.new-version.outputs.newVersion }}
-        run: |
-          mvn versions:set -DnewVersion=${NEW_POM_VERSION} -DgenerateBackupPoms=false
+          
+          # update pom version with this new version
+          mvn versions:set -DnewVersion=${newVersion} -DgenerateBackupPoms=false
+
+          # commit changes
+          git status
           git config --global user.email "github-action-workflows@example.com"
           git config --global user.name "Github Actions Workflow"
-          git commit pom.xml -m "Pom updated with project verison ${NEW_POM_VERSION}"
-          branchName=feature/git-actions-auto-pom-update-to-${shortVersion}
-          git checkout -b ${branchName}
+          git commit pom.xml -m "Pom updated with project verison ${newVersion}"
+
+          # push to new branch
+          branchName=feature/actions-auto-backmerge-after-${GITHUB_REF_NAME}-release
           git push origin HEAD:${branchName}
           git status
+          echo "branchName=${branchName}" >> $GITHUB_OUTPUT
+      
+      - name: Create pull request
+        env:
+          PR_SOURCE_BRANCH: ${{ steps.update-and-push-to-new-branch.outputs.branchName }}
+        run: gh pr create -B main -H $PR_SOURCE_BRANCH -f
