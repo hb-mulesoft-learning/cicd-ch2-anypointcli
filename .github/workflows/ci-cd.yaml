@@ -153,4 +153,8 @@ jobs:
       - name: Create pull request
         env:
           PR_SOURCE_BRANCH: ${{ steps.update-and-push-to-new-branch.outputs.branchName }}
-        run: gh pr create -B main -H $PR_SOURCE_BRANCH -f
+        run: |
+          gh pr create \
+          --base main --head $PR_SOURCE_BRANCH \
+          --title "Autogenerate PR by github actions workflow" \
+          --body "Update POM version and backmerge other commits"
