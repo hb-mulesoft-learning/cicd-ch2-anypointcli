@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Publish and deploy
     environment: ${{ inputs.targetEnv }}
-    steps:          
+    steps:
       - name: Download Artifact
         uses: actions/download-artifact@v3
         with:

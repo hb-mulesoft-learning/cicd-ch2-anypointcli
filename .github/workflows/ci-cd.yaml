@@ -127,7 +127,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update and push to new branch
+      - name: Update POM and push to new branch
         id: update-and-push-to-new-branch
         run: |
           # set new version based on tag
